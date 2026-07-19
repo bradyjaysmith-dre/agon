@@ -84,11 +84,24 @@ export default function CirclePage() {
       {challenges?.length === 0 && <p style={{ color: colors.muted }}>No challenges yet.</p>}
       {challenges?.map((c) => (
         <Link key={c.id} to={`/challenges/${c.id}`} style={{ textDecoration: 'none' }}>
-          <div style={{ ...panel, cursor: 'pointer' }}>
-            <strong>{c.title}</strong>
-            <div style={{ color: colors.muted, fontSize: '13px' }}>
-              {c.status} · {c.confirmation_timing === 'per_entry' ? 'confirmed per entry' : 'confirmed at completion'}
+          <div
+            style={{
+              ...panel,
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <strong>{c.title}</strong>
+              <div style={{ color: colors.muted, fontSize: '13px' }}>
+                {c.status} · {c.confirmation_timing === 'per_entry' ? 'confirmed per entry' : 'confirmed at completion'}
+              </div>
             </div>
+            <span style={{ color: colors.accent, fontSize: '13px', whiteSpace: 'nowrap' }}>
+              Open, log progress & leaderboard →
+            </span>
           </div>
         </Link>
       ))}
