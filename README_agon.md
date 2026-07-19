@@ -12,6 +12,11 @@ delegated proxy), climb the leaderboard, earn badges.
   Clerk auth, Circle invite-code join flow, challenge creation, progress
   logging + confirmer approval, leaderboard, starter badge set. No public
   board, no gift cards, no cash — see roadmap below.
+- **0.1.1** (2026-07-19) — Deployed to Railway (auto-deploy on push to
+  `main`): https://agon-server-production-30c9.up.railway.app (API),
+  https://agon-client-production.up.railway.app (frontend). Not yet
+  usable end-to-end — real Clerk keys still need to be set on Railway,
+  see `agon-CLAUDE.md` Status section for the exact commands.
 
 ## Stack
 - Frontend: React + Vite (`client/`)
@@ -26,8 +31,10 @@ conventions (SQLite, shared `JWT_SECRET`) — see `agon-CLAUDE.md` for why.
 
 ### 1. Start Postgres
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
+(This machine has the legacy `docker-compose` v1 binary rather than the
+`docker compose` plugin — use the hyphenated form.)
 
 ### 2. Configure environment
 ```bash
@@ -58,6 +65,22 @@ cd server && npm run dev
 cd client && npm run dev
 ```
 Server: http://localhost:4000 · Client: http://localhost:5173
+
+## Deployment (Railway)
+Auto-deploys on every push to `main`. Project `agon` has three services:
+`Postgres`, `agon-server` (root dir `server/`), `agon-client` (root dir
+`client/`). Infra is defined in `.railway/railway.ts`:
+```bash
+railway login          # browser OAuth, one-time
+railway config plan    # preview changes against .railway/railway.ts
+railway config apply   # apply after reviewing the plan
+```
+Domains and secrets (Clerk keys) are set imperatively, not in source:
+```bash
+railway variable set CLERK_SECRET_KEY=... CLERK_PUBLISHABLE_KEY=... --service agon-server
+railway variable set VITE_CLERK_PUBLISHABLE_KEY=... --service agon-client
+railway redeploy --service agon-client   # VITE_* vars are baked at build time
+```
 
 ## Data Model
 `users`, `circles`, `circle_members`, `challenges`, `challenge_participants`,

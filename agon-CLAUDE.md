@@ -8,24 +8,45 @@ from the suite's shared conventions in several places. Treat the deviations
 below as intentional, not gaps to "fix" toward suite consistency.
 
 ## Status
-Phase 0 skeleton built (2026-07-19): Express + Postgres backend, Clerk auth,
-Circle invite-code join flow, challenge creation, progress logging +
-confirmer approval, leaderboard, starter badge set. React + Vite frontend
-wired up. Local git repo initialized on `main`, not yet pushed to a GitHub
-remote, no commits made yet (scaffold is on disk, uncommitted). Postgres
-runs locally via `docker-compose.yml`. Not yet deployed to Railway.
+Phase 0 skeleton built (2026-07-19) and deployed to Railway the same day:
+Express + Postgres backend, Clerk auth, Circle invite-code join flow,
+challenge creation, progress logging + confirmer approval, leaderboard,
+starter badge set. React + Vite frontend wired up. Pushed to
+`github.com/bradyjaysmith-dre/agon` on `main`; Railway project `agon`
+(workspace bradyjaysmith-dre's Projects) has three services — `Postgres`,
+`agon-server` (root dir `server/`), `agon-client` (root dir `client/`) —
+auto-deploying on every push to `main`. Live URLs:
+- Backend: https://agon-server-production-30c9.up.railway.app
+- Frontend: https://agon-client-production.up.railway.app
 
-Still needed before family beta: real Clerk application + keys (server/.env
-and client/.env currently hold placeholders), a GitHub remote, and a
-Railway deploy.
+**Only remaining manual step before this is actually usable:** a real
+Clerk application. `CLERK_SECRET_KEY` / `CLERK_PUBLISHABLE_KEY` (on
+`agon-server`) and `VITE_CLERK_PUBLISHABLE_KEY` (on `agon-client`, build-time —
+requires a redeploy after setting, not just a restart) are still unset on
+Railway. The frontend deliberately hard-crashes on load without the Clerk
+key (see `client/src/main.jsx`) rather than running broken, so the deployed
+site will show that error page until this is done. Once Dre has real keys:
+`railway variable set CLERK_SECRET_KEY=... CLERK_PUBLISHABLE_KEY=... --service agon-server`
+then `railway variable set VITE_CLERK_PUBLISHABLE_KEY=... --service agon-client`
+followed by `railway redeploy --service agon-client` (build-time var, needs
+a rebuild, not just a restart).
 
 ## Location & Deployment
-- Path (planned): `~/projects/agon`
-- Repo: `agon` (mirrors `pandora-bingo`)
-- Deploy: Railway, auto-deploy on push to `main`
-- Commit flow: `git add . && git commit -m "message" && git push`
-- Code delivery: git patch files (`format-patch` / `git am`), same pattern as
-  Pandora Bingo, if Claude's sandbox has read-only repo access
+- Path: `~/projects/agon`
+- Repo: `agon`, GitHub `bradyjaysmith-dre/agon`, default branch `main`
+- Deploy: Railway, auto-deploy on push to `main` (already wired up and live)
+- Railway infra is managed as code in `.railway/railway.ts` (services,
+  Postgres, root directories, cross-service env var references). Workflow:
+  edit `.railway/railway.ts` → `railway config plan` → review → `railway config apply`.
+  Requires the `railway` npm package (root `package.json` devDependency) and
+  `railway login` (browser OAuth; use `--browserless` only if no local
+  browser is available). Domains and any secret values (Clerk keys) are
+  managed imperatively via `railway domain` / `railway variable set`, not
+  written into `railway.ts` — see the file's own generated
+  `.agents/skills/railway-config/SKILL.md` for the house rules (never commit
+  generated domains, UUIDs, or secret values into source).
+- Commit flow: `git add . && git commit -m "message" && git push` (pushing
+  to `main` triggers Railway auto-deploy on both services)
 - Milestone snapshots: `archive.sh` (rsync-based) → `~/agon-milestones/<name>/`
   — note this is a top-level path, not under `~/backups/` like the rest of
   the suite's post-migration milestone convention; worth deciding whether to
