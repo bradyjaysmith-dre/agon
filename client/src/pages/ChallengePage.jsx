@@ -53,7 +53,7 @@ export default function ChallengePage() {
   async function handleLogProgress(e) {
     e.preventDefault();
     runAction(async () => {
-      await api(`/api/challenges/${challengeId}/progress`, {
+      await api(`/api/progress/challenges/${challengeId}/progress`, {
         method: 'POST',
         body: JSON.stringify({ value: value ? Number(value) : null, description }),
       });
