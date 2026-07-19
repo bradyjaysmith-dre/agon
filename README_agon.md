@@ -50,6 +50,15 @@ delegated proxy), climb the leaderboard, earn badges.
   `Cache-Control`, so browsers could keep serving a stale build after a
   deploy — `client/public/serve.json` now forces revalidation on
   `index.html` while long-caching the hashed asset files.
+- **0.2.3** (2026-07-19) — Dre tested tournament brackets end to end:
+  **passed.** Relaxed the `/start` confirmer guard (2+ confirmers is now
+  enough even if both are playing, not just a confirmer who never plays).
+  Added challenge lifecycle management for the originator (pause/resume,
+  cancel, delete, restart from the beginning, kick a participant) and
+  circle-member removal for the Circle creator — see `agon-CLAUDE.md` for
+  the exact rules (new `paused` status, what restart clears vs. keeps,
+  why kicking a tournament participant is blocked once the bracket has
+  started).
 
 ## Stack
 - Frontend: React + Vite (`client/`)

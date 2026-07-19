@@ -20,6 +20,14 @@ rules — those four are explicitly deferred, not cancelled. First new type:
 single-elimination tournament brackets (chess tournament was the motivating
 example). See "Challenge Types" below for the architecture.
 
+**Tournament brackets tested and passed by Dre (2026-07-19).** Same day,
+added challenge lifecycle management (pause/resume, cancel, delete,
+restart, kick a participant — originator only) and member removal (Circle
+creator only). See "Challenge Lifecycle & Moderation" below for the exact
+rules — several of them (what restart clears vs. keeps, why kick is
+blocked mid-tournament, why deleting a challenge doesn't delete badges)
+are not obvious from the route names alone.
+
 Phase 0 skeleton built (2026-07-19) and deployed to Railway the same day:
 Express + Postgres backend, Clerk auth, Circle invite-code join flow,
 challenge creation, progress logging + confirmer approval, leaderboard,
@@ -133,6 +141,42 @@ gates which schema/routes/UI apply:
   progress/leaderboard endpoints, `challenges.js`'s manual `/complete`) all
   gate on `challenge_type` — do the same for any new type's routes that
   shouldn't apply cross-type.
+
+## Challenge Lifecycle & Moderation (added 2026-07-19)
+`challenges.status` is now `active | paused | completed | cancelled`
+(migration 003 added `paused`). All actions below are originator-only
+unless noted, live in `challenges.js` (except kick's tournament guard,
+which checks `tournament_matches`), and reload via `ChallengePage.jsx`'s
+`ManageChallengePanel` / `ParticipantsPanel`:
+- **Pause/resume** — `paused` blocks join, progress logging, entry
+  confirmation, tournament start, and match recording (checked server-side
+  in `progress.js` and `tournaments.js`, not just hidden in the UI).
+  Editing, adding confirmers, and kicking are still allowed while paused —
+  those are admin actions, not gameplay.
+- **Cancel** — soft, `status='cancelled'`. Blocked if already
+  cancelled/completed.
+- **Delete** — hard `DELETE FROM challenges`, cascades to participants/
+  confirmers/progress_entries/tournament_matches via existing FKs.
+  `user_badges.challenge_id` is `ON DELETE SET NULL` — a badge someone
+  earned survives the challenge being deleted, just loses the backlink.
+- **Restart** — clears `progress_entries` (simple_progress) or
+  `tournament_matches` (tournament_bracket), plus any `user_badges` tied to
+  that challenge_id, and resets `status='active'`. **Participants and
+  confirmers are deliberately kept** — restart resets the outcome, not the
+  roster. For a tournament, this means the next `/start` call re-shuffles
+  and regenerates the bracket from scratch (reuses the same generation
+  code, not a separate implementation).
+- **Kick a participant** — soft, `challenge_participants.status='disqualified'`
+  (leaderboard query now filters `cp.status='active'`, a latent bug fixed
+  at the same time). **Blocked once a tournament's bracket has started**
+  (`tournament_matches` rows exist) — removing a seeded player mid-bracket
+  has no sane resolution without match-forfeit logic, which this pass
+  didn't build. Originator can't kick themselves.
+- **Circle member removal** (`circles.js`, Circle creator/`owner_id` only,
+  not any admin) — hard `DELETE FROM circle_members`. Doesn't retroactively
+  touch their history in challenges they already joined within that
+  Circle, only revokes future circle-scoped access (`loadMembership`
+  returns null for them going forward). Owner can't remove themselves.
 
 ## Data Model Sketch (starting point — see vision doc §9 for full detail)
 `users`, `circles`, `circle_members`, `challenges`, `challenge_participants`,
