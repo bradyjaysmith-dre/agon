@@ -1,0 +1,10 @@
+node_modules/
+certs/
+*.pem
+*.key
+.env
+.env.local
+*.db
+*.db-journal
+dist/
+.DS_Store
