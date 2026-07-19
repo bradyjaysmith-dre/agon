@@ -12,6 +12,7 @@ export default function CirclePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [confirmationTiming, setConfirmationTiming] = useState('completion_only');
+  const [challengeType, setChallengeType] = useState('simple_progress');
   const [busy, setBusy] = useState(false);
 
   async function load() {
@@ -40,7 +41,7 @@ export default function CirclePage() {
     try {
       await api(`/api/challenges/circles/${circleId}/challenges`, {
         method: 'POST',
-        body: JSON.stringify({ title, description, confirmationTiming }),
+        body: JSON.stringify({ title, description, confirmationTiming, challengeType }),
       });
       setTitle('');
       setDescription('');
@@ -96,11 +97,16 @@ export default function CirclePage() {
             <div>
               <strong>{c.title}</strong>
               <div style={{ color: colors.muted, fontSize: '13px' }}>
-                {c.status} · {c.confirmation_timing === 'per_entry' ? 'confirmed per entry' : 'confirmed at completion'}
+                {c.status} ·{' '}
+                {c.challenge_type === 'tournament_bracket'
+                  ? 'tournament bracket'
+                  : c.confirmation_timing === 'per_entry'
+                    ? 'confirmed per entry'
+                    : 'confirmed at completion'}
               </div>
             </div>
             <span style={{ color: colors.accent, fontSize: '13px', whiteSpace: 'nowrap' }}>
-              Open, log progress & leaderboard →
+              {c.challenge_type === 'tournament_bracket' ? 'Open bracket →' : 'Open, log progress & leaderboard →'}
             </span>
           </div>
         </Link>
@@ -116,15 +122,31 @@ export default function CirclePage() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <label style={label}>Confirmation timing</label>
-        <select
-          style={input}
-          value={confirmationTiming}
-          onChange={(e) => setConfirmationTiming(e.target.value)}
-        >
-          <option value="completion_only">Confirm only at completion</option>
-          <option value="per_entry">Confirm every entry</option>
+        <label style={label}>Challenge type</label>
+        <select style={input} value={challengeType} onChange={(e) => setChallengeType(e.target.value)}>
+          <option value="simple_progress">Simple Progress Tracking</option>
+          <option value="tournament_bracket">Tournament Bracket</option>
         </select>
+        <div style={{ color: colors.muted, fontSize: '12px', marginTop: '4px' }}>
+          {challengeType === 'tournament_bracket'
+            ? 'Single-elimination bracket — good for head-to-head competitions like chess or ping pong.'
+            : 'Participants log progress over time, confirmed by you or a delegate, ranked on a leaderboard.'}
+        </div>
+
+        {challengeType === 'simple_progress' && (
+          <>
+            <label style={label}>Confirmation timing</label>
+            <select
+              style={input}
+              value={confirmationTiming}
+              onChange={(e) => setConfirmationTiming(e.target.value)}
+            >
+              <option value="completion_only">Confirm only at completion</option>
+              <option value="per_entry">Confirm every entry</option>
+            </select>
+          </>
+        )}
+
         <button type="submit" style={{ ...button, marginTop: '12px' }} disabled={busy}>
           Create Challenge
         </button>

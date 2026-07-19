@@ -11,6 +11,9 @@ router.post('/challenges/:id/progress', requireUser, async (req, res, next) => {
     const { challenge, membership } = await loadChallengeForMember(challengeId, req.dbUser.id);
     if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
     if (!membership) return res.status(403).json({ error: 'Not a member of this circle' });
+    if (challenge.challenge_type !== 'simple_progress') {
+      return res.status(400).json({ error: 'This challenge type does not support progress logging' });
+    }
 
     const participantRes = await pool.query(
       `SELECT 1 FROM challenge_participants WHERE challenge_id = $1 AND user_id = $2`,
@@ -68,6 +71,9 @@ router.get('/challenges/:id/leaderboard', requireUser, async (req, res, next) =>
     const { challenge, membership } = await loadChallengeForMember(challengeId, req.dbUser.id);
     if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
     if (!membership) return res.status(403).json({ error: 'Not a member of this circle' });
+    if (challenge.challenge_type !== 'simple_progress') {
+      return res.status(400).json({ error: 'This challenge type does not have a leaderboard' });
+    }
 
     const { rows } = await pool.query(
       `SELECT u.id AS user_id, u.name,

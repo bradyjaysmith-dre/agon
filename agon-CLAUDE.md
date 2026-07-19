@@ -11,9 +11,14 @@ below as intentional, not gaps to "fix" toward suite consistency.
 **Phase 0 manually tested end-to-end by Dre (2026-07-19) — passed.** Two
 bugs found during that testing (progress-logging route mismatch, unclear
 challenge-card click affordance) were fixed same day (see version log in
-`README_agon.md`). Ready for actual family beta invites — next real
-milestone is getting relatives using it, not more engineering, unless
-testing surfaces something new.
+`README_agon.md`).
+
+**Phase 1 pivoted from the original plan.** Dre wants challenges to be
+*structurally* customizable (different mechanics per type, not just
+different copy) before gift cards/public board/proof uploads/eligibility
+rules — those four are explicitly deferred, not cancelled. First new type:
+single-elimination tournament brackets (chess tournament was the motivating
+example). See "Challenge Types" below for the architecture.
 
 Phase 0 skeleton built (2026-07-19) and deployed to Railway the same day:
 Express + Postgres backend, Clerk auth, Circle invite-code join flow,
@@ -83,22 +88,56 @@ for Agon in the vision doc (§8).
 
 ## Core Concepts (for schema/route naming)
 - **Challenge** — created by an **originator**; has rules, verification
-  method, duration, eligibility, optional prize
+  method, duration, eligibility, optional prize, and a **challenge_type**
+  (see "Challenge Types" below)
 - **Circle** — curated group (invite-code based, Pandora-Bingo-room-code
   style per current lean); challenges can be Circle-scoped or public-board
-- **Confirmer** — originator or delegated proxy who confirms progress;
-  cannot confirm their own entries (self-dealing guard)
+- **Confirmer** — originator or delegated proxy who confirms progress (or,
+  for tournaments, records match results); cannot confirm/record their own
+  (self-dealing guard, enforced at both the DB and app layer)
 - **Prize** — badge (Phase 0), gift card (Phase 1, third-party API), or cash
   (Phase 2, gated — see Legal Gate below)
 
+## Challenge Types (Phase 1 architecture, added 2026-07-19)
+Deliberately a **fixed set of built-in types**, not a no-code/plugin
+builder — that was an explicit scope decision with Dre (a true in-app
+type-builder was considered and rejected as too large). `challenges.challenge_type`
+gates which schema/routes/UI apply:
+- **`simple_progress`** (Phase 0 default) — log progress entries, confirmer
+  approval, leaderboard. Routes in `challenges.js`/`progress.js`. Frontend:
+  `client/src/components/SimpleProgressView.jsx`.
+- **`tournament_bracket`** — single-elimination bracket. New table
+  `tournament_matches` (round, match_index, two participant slots, winner,
+  status pending/ready/completed). Routes in `server/src/routes/tournaments.js`
+  (mounted at `/api/tournaments`). Frontend:
+  `client/src/components/TournamentBracketView.jsx`. Key design points if
+  extending this: bracket generation (bye/seeding math) and winner
+  propagation both live in `tournaments.js` and are covered by a hand-worked
+  proof (bye count is always < round-1 match count when bracket size is the
+  minimal power of two ≥ N, so no match ever gets two byes) — don't touch
+  that math without re-deriving it. A 2-participant tournament where every
+  confirmer is also a participant is a **hard deadlock** (nobody eligible to
+  record the one match) — `/start` rejects this case explicitly, keep that
+  guard if refactoring.
+- Adding a third type follows the same pattern: new `challenge_type` enum
+  value, its own route file if the mechanics differ enough, its own
+  frontend component, and `ChallengePage.jsx` dispatches on
+  `challenge.challenge_type`. Existing types' routes (`progress.js`'s
+  progress/leaderboard endpoints, `challenges.js`'s manual `/complete`) all
+  gate on `challenge_type` — do the same for any new type's routes that
+  shouldn't apply cross-type.
+
 ## Data Model Sketch (starting point — see vision doc §9 for full detail)
 `users`, `circles`, `circle_members`, `challenges`, `challenge_participants`,
-`progress_entries`, `challenge_confirmers`, `prizes`, `payouts`, `badges`,
-`user_badges`.
+`progress_entries`, `challenge_confirmers`, `tournament_matches`, `prizes`,
+`payouts`, `badges`, `user_badges`.
 
 Notable constraints to preserve in migrations:
 - `progress_entries.confirmed_by` must reference a valid `challenge_confirmers`
   row and cannot equal `progress_entries.user_id`
+- `tournament_matches` mirrors that same self-dealing shape:
+  `recorded_by` can't equal either participant slot, and `winner_id` must be
+  one of the two participant slots (both DB-level CHECKs)
 - `payouts` intentionally lives outside Agon's own custody (routed through a
   third-party payment processor, not an internal ledger) — see Legal Gate
 
@@ -120,28 +159,38 @@ If a task looks like it's drifting toward entry-fee or payout logic, flag it
 back to Dre rather than proceeding.
 
 ## Phased Roadmap (see vision doc §5 for full detail)
-- **Phase 0 (current target) — Family Beta:** email/password + optional
-  social auth, create/join challenges, Circle-only (invite code), progress
-  tracking + confirmer approval, leaderboard, **non-tangible prizes only**,
-  basic notifications.
-- **Phase 1 — Hardening & Gift Cards:** gift-card prizes via third-party API,
-  public board with moderation, proof-of-completion uploads, expanded
-  eligibility rules.
+- **Phase 0 — Family Beta — DONE, tested and passed 2026-07-19:**
+  email/password + optional social auth, create/join challenges, Circle-only
+  (invite code), progress tracking + confirmer approval, leaderboard,
+  non-tangible prizes only, basic notifications.
+- **Phase 1 (current target) — pivoted 2026-07-19 to customizable challenge
+  types first** (see "Challenge Types" above), starting with tournament
+  brackets. The original Phase 1 plan — gift-card prizes via third-party
+  API, public board with moderation, proof-of-completion uploads, expanded
+  eligibility rules — is deferred, not cancelled; resume it once challenge
+  types are done or Dre redirects.
 - **Phase 2 — Cash Prize Pools:** conditional on legal review (see gate
   above). Stripe Connect or equivalent, state-aware rules, KYC/1099 handling.
 - **Phase 3 — App Store Readiness:** React Native/Expo shell, store-compliant
   policies, production-grade auth/monitoring/support. Applies to both Agon
   and Pandora Bingo.
 
-## Open Decisions Still Needing Answers (vision doc §10)
-- 1a. Confirmation timing: per-entry vs. only-at-completion
-- 1b. Dispute path if a confirmer declines to confirm (currently leaning
-  "final for Phase 0, revisit later")
-- Circle model: single invite code vs. persistent friends-list
-- Badge system: build in-house for Phase 0 vs. free-text prize description
-- Public board timing: any visibility in the family beta, or Circle-scoped
-  until Phase 1
-- Naming for "Circles" (vs. Leagues/Groups/Tribes)
+## Backlog (explicitly not yet scheduled)
+- **In-app Circle invites via email/SMS** — Dre requested this 2026-07-19
+  but explicitly deferred it to "a later phase," not Phase 1. Today,
+  inviting someone means manually sharing the app URL + invite code outside
+  the app. Needs: an email provider (transactional email, e.g. Resend/Postmark)
+  and/or SMS provider (e.g. Twilio) — don't build without picking those and
+  confirming timing with Dre first.
+
+## Decisions Log (vision doc §10 — resolved before Phase 0 build, for history)
+Confirmation timing (originator's choice, per-challenge), dispute path
+(confirmer's word is final for Phase 0), Circle model (invite code), badge
+system (in-house starter set), public board timing (Circle-scoped — still
+true today; the Phase 1 pivot to challenge types didn't touch this), and the
+"Circles" name were all resolved before Phase 0 was built. Full detail in
+`Agon_Vision_Document.md` §10 if the reasoning behind any of these ever
+needs revisiting.
 
 ## Suite-Wide Conventions That *Do* Still Apply
 - Complete replacement files for complex components; targeted edits for
@@ -154,13 +203,13 @@ back to Dre rather than proceeding.
   Railway/Nixpacks (the gotcha that bit Pandora Bingo)
 
 ## Next Session Tasks
-Phase 0 skeleton is built (see Status above). Remaining before family beta:
-1. Create a real Clerk application, drop the keys into `server/.env` /
-   `client/.env` (currently placeholders), and manually verify a full
-   sign-up → create Circle → join → create challenge → log progress →
-   confirm → leaderboard flow end-to-end.
-2. Push to a GitHub remote and set up Railway deploy (Postgres +
-   Node/Express service + static frontend or a combined build).
-3. Resolve remaining open items: dispute-path friction once real users hit
-   it, whether the "Streaker" badge needs actual streak-tracking logic (not
-   yet implemented — badge exists in the catalog but nothing awards it yet).
+1. Dre needs to manually test the tournament bracket flow end-to-end in the
+   browser (create a `tournament_bracket` challenge, join with 3+ accounts,
+   start it, record match results as a non-competing confirmer, confirm the
+   champion badge lands) — this was verified at the SQL/algorithm level
+   during development but not yet through the real UI with real accounts.
+2. The "Streaker" badge still has no award logic (exists in the catalog,
+   nothing grants it) — pre-existing gap, not part of this pass.
+3. Once challenge types are confirmed working, either continue adding types
+   or resume the original Phase 1 plan (gift cards, public board, proof
+   uploads, eligibility rules) — ask Dre which.

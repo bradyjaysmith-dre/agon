@@ -6,6 +6,7 @@ import badgesRouter from './routes/badges.js';
 import challengesRouter from './routes/challenges.js';
 import circlesRouter from './routes/circles.js';
 import progressRouter from './routes/progress.js';
+import tournamentsRouter from './routes/tournaments.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/circles', circlesRouter);
 app.use('/api/challenges', challengesRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/badges', badgesRouter);
+app.use('/api/tournaments', tournamentsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });

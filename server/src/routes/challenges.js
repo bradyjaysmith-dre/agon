@@ -12,11 +12,20 @@ router.post('/circles/:circleId/challenges', requireUser, async (req, res, next)
       return res.status(403).json({ error: 'Not a member of this circle' });
     }
 
-    const { title, description, confirmationTiming = 'completion_only', startAt, endAt } =
-      req.body ?? {};
+    const {
+      title,
+      description,
+      confirmationTiming = 'completion_only',
+      challengeType = 'simple_progress',
+      startAt,
+      endAt,
+    } = req.body ?? {};
     if (!title?.trim()) return res.status(400).json({ error: 'title is required' });
     if (!['per_entry', 'completion_only'].includes(confirmationTiming)) {
       return res.status(400).json({ error: 'confirmationTiming must be per_entry or completion_only' });
+    }
+    if (!['simple_progress', 'tournament_bracket'].includes(challengeType)) {
+      return res.status(400).json({ error: 'challengeType must be simple_progress or tournament_bracket' });
     }
 
     const client = await pool.connect();
@@ -24,10 +33,19 @@ router.post('/circles/:circleId/challenges', requireUser, async (req, res, next)
       await client.query('BEGIN');
       const { rows } = await client.query(
         `INSERT INTO challenges
-           (circle_id, originator_id, title, description, confirmation_timing, start_at, end_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+           (circle_id, originator_id, title, description, confirmation_timing, challenge_type, start_at, end_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *`,
-        [circleId, req.dbUser.id, title.trim(), description ?? null, confirmationTiming, startAt ?? null, endAt ?? null]
+        [
+          circleId,
+          req.dbUser.id,
+          title.trim(),
+          description ?? null,
+          confirmationTiming,
+          challengeType,
+          startAt ?? null,
+          endAt ?? null,
+        ]
       );
       const challenge = rows[0];
 
@@ -129,6 +147,16 @@ router.post('/:id/join', requireUser, async (req, res, next) => {
     if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
     if (!membership) return res.status(403).json({ error: 'Not a member of this circle' });
 
+    if (challenge.challenge_type === 'tournament_bracket') {
+      const startedRes = await pool.query(
+        'SELECT 1 FROM tournament_matches WHERE challenge_id = $1 LIMIT 1',
+        [challengeId]
+      );
+      if (startedRes.rows.length) {
+        return res.status(400).json({ error: 'Tournament has already started, new participants cannot join' });
+      }
+    }
+
     await pool.query(
       `INSERT INTO challenge_participants (challenge_id, user_id) VALUES ($1, $2)
        ON CONFLICT (challenge_id, user_id) DO NOTHING`,
@@ -147,6 +175,11 @@ router.post('/:id/complete', requireUser, async (req, res, next) => {
     if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
     if (challenge.originator_id !== req.dbUser.id) {
       return res.status(403).json({ error: 'Only the originator can complete a challenge' });
+    }
+    if (challenge.challenge_type === 'tournament_bracket') {
+      return res.status(400).json({
+        error: 'Tournament challenges complete automatically when the final match is recorded',
+      });
     }
 
     const client = await pool.connect();

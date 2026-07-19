@@ -30,6 +30,13 @@ delegated proxy), climb the leaderboard, earn badges.
   page where progress/leaderboard/confirm live).
 - **0.1.4** (2026-07-19) — Dre re-tested end-to-end: **Phase 0 passed.**
   Ready for family beta invites.
+- **0.2.0** (2026-07-19) — Phase 1, pivoted: challenges now have a
+  `challenge_type`. Added the first new type, single-elimination tournament
+  brackets (seeding/byes, match recording, auto-advancing bracket, champion
+  badge) alongside the original progress-tracking type. New "Challenge type"
+  selector when creating a challenge. Gift cards/public board/proof
+  uploads/eligibility rules (the original Phase 1 plan) are deferred, not
+  cancelled — see `agon-CLAUDE.md`.
 
 ## Stack
 - Frontend: React + Vite (`client/`)
