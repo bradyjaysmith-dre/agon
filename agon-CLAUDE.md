@@ -34,14 +34,17 @@ same day they shipped.** Everything built during the Phase 1 pivot so far
 confirmed working through the real UI, not just verified against
 Postgres directly.
 
-**Full visual redesign (2026-07-19).** Dre asked for the Intro page's
-ancient-Greek theme and laurel motif to extend across the whole app —
-see "Frontend Styling" below. This is a real, deliberate divergence from
-the Coherence Suite's "inline styles only" convention (per the global
-`~/.claude/CLAUDE.md`) — don't try to "fix" the app back toward inline
-styles, the app never actually committed to that convention in this file
-to begin with, and the CSS-class approach is now load-bearing for hover
-states and the shared font/color system.
+**Full visual redesign, reviewed and passed by Dre (2026-07-19).** Dre
+asked for the Intro page's ancient-Greek theme and laurel motif to extend
+across the whole app — see "Frontend Styling" below. This is a real,
+deliberate divergence from the Coherence Suite's "inline styles only"
+convention (per the global `~/.claude/CLAUDE.md`) — don't try to "fix"
+the app back toward inline styles, the app never actually committed to
+that convention in this file to begin with, and the CSS-class approach is
+now load-bearing for hover states and the shared font/color system.
+
+First `archive.sh` milestone snapshot taken same day, once the redesign
+was confirmed good — see `~/agon-milestones/`.
 
 Next real decision point is what to build next — see
 "Next Session Tasks" below.

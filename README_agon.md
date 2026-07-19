@@ -70,7 +70,8 @@ delegated proxy), climb the leaderboard, earn badges.
   style objects, so buttons/links get real hover states. New reusable
   `Laurel` wreath component (same wreath as the Intro page's wordmark)
   frames earned badges and the tournament champion banner — the two
-  moments in the app that are actually about winning.
+  moments in the app that are actually about winning. Dre reviewed and
+  confirmed it: **passed.**
 
 ## Stack
 - Frontend: React + Vite (`client/`)
