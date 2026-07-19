@@ -42,6 +42,14 @@ delegated proxy), climb the leaderboard, earn badges.
   bare-bones placeholder. One deliberate exception to inline-styles-only:
   this page has its own scoped CSS file for animations/hover/responsive
   layout — see `client/src/pages/IntroPage.css`.
+- **0.2.2** (2026-07-19) — Added the confirmer-adding feature that
+  tournament brackets actually depend on (originator was always the sole
+  confirmer with no way to add another — see `agon-CLAUDE.md`). Added
+  challenge editing (title/description/confirmation timing, originator
+  only). Fixed a client cache bug: `index.html` had no explicit
+  `Cache-Control`, so browsers could keep serving a stale build after a
+  deploy — `client/public/serve.json` now forces revalidation on
+  `index.html` while long-caching the hashed asset files.
 
 ## Stack
 - Frontend: React + Vite (`client/`)
