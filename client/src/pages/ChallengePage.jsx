@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ConfirmersPanel from '../components/ConfirmersPanel.jsx';
 import EditChallengeForm from '../components/EditChallengeForm.jsx';
+import ManageChallengePanel from '../components/ManageChallengePanel.jsx';
+import ParticipantsPanel from '../components/ParticipantsPanel.jsx';
 import SimpleProgressView from '../components/SimpleProgressView.jsx';
 import TournamentBracketView from '../components/TournamentBracketView.jsx';
 import { useApi } from '../lib/api.js';
@@ -36,7 +38,9 @@ export default function ChallengePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [challengeId]);
 
-  const isParticipant = challenge?.participants.some((p) => p.id === challenge.currentUserId);
+  const isParticipant = challenge?.participants.some(
+    (p) => p.id === challenge.currentUserId && p.status === 'active'
+  );
   const isOriginator = challenge?.originator_id === challenge?.currentUserId;
   const tournamentStarted = challenge?.challenge_type === 'tournament_bracket' && bracket && bracket.length > 0;
 
@@ -105,7 +109,9 @@ export default function ChallengePage() {
         </button>
       )}
 
+      <ManageChallengePanel challenge={challenge} onReload={load} />
       <ConfirmersPanel challenge={challenge} onReload={load} />
+      <ParticipantsPanel challenge={challenge} onReload={load} />
 
       {challenge.challenge_type === 'tournament_bracket' ? (
         <TournamentBracketView challenge={challenge} bracket={bracket} onReload={load} />

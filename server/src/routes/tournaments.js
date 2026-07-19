@@ -190,6 +190,9 @@ router.post('/matches/:matchId/result', requireUser, async (req, res, next) => {
     const { challenge, membership } = await loadChallengeForMember(match.challenge_id, req.dbUser.id);
     if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
     if (!membership) return res.status(403).json({ error: 'Not a member of this circle' });
+    if (challenge.status !== 'active') {
+      return res.status(400).json({ error: `Challenge is ${challenge.status}, cannot record match results` });
+    }
 
     const confirmerRes = await pool.query(
       `SELECT 1 FROM challenge_confirmers WHERE challenge_id = $1 AND user_id = $2`,

@@ -200,6 +200,9 @@ router.post('/:id/join', requireUser, async (req, res, next) => {
     const { challenge, membership } = await loadChallengeForMember(challengeId, req.dbUser.id);
     if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
     if (!membership) return res.status(403).json({ error: 'Not a member of this circle' });
+    if (challenge.status !== 'active') {
+      return res.status(400).json({ error: `Challenge is ${challenge.status}, not accepting new participants` });
+    }
 
     if (challenge.challenge_type === 'tournament_bracket') {
       const startedRes = await pool.query(
@@ -263,6 +266,9 @@ router.post('/:id/complete', requireUser, async (req, res, next) => {
         error: 'Tournament challenges complete automatically when the final match is recorded',
       });
     }
+    if (challenge.status !== 'active') {
+      return res.status(400).json({ error: `Challenge is ${challenge.status}, cannot be completed` });
+    }
 
     const client = await pool.connect();
     try {
@@ -285,6 +291,152 @@ router.post('/:id/complete', requireUser, async (req, res, next) => {
     } finally {
       client.release();
     }
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/pause', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can pause a challenge' });
+    }
+    const { rows } = await pool.query(
+      `UPDATE challenges SET status = 'paused' WHERE id = $1 AND status = 'active' RETURNING *`,
+      [challengeId]
+    );
+    if (!rows.length) return res.status(400).json({ error: 'Only an active challenge can be paused' });
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/resume', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can resume a challenge' });
+    }
+    const { rows } = await pool.query(
+      `UPDATE challenges SET status = 'active' WHERE id = $1 AND status = 'paused' RETURNING *`,
+      [challengeId]
+    );
+    if (!rows.length) return res.status(400).json({ error: 'Only a paused challenge can be resumed' });
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/cancel', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can cancel a challenge' });
+    }
+    if (challenge.status === 'cancelled' || challenge.status === 'completed') {
+      return res.status(400).json({ error: `Challenge is already ${challenge.status}` });
+    }
+    const { rows } = await pool.query(
+      `UPDATE challenges SET status = 'cancelled' WHERE id = $1 RETURNING *`,
+      [challengeId]
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can delete a challenge' });
+    }
+    // Cascades to participants, confirmers, progress_entries, tournament_matches;
+    // user_badges.challenge_id is set to NULL rather than the badge being deleted.
+    await pool.query('DELETE FROM challenges WHERE id = $1', [challengeId]);
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/restart', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can restart a challenge' });
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Participants and confirmers stay -- only the outcome/progress resets.
+      if (challenge.challenge_type === 'simple_progress') {
+        await client.query('DELETE FROM progress_entries WHERE challenge_id = $1', [challengeId]);
+      } else if (challenge.challenge_type === 'tournament_bracket') {
+        await client.query('DELETE FROM tournament_matches WHERE challenge_id = $1', [challengeId]);
+      }
+      await client.query('DELETE FROM user_badges WHERE challenge_id = $1', [challengeId]);
+      const { rows } = await client.query(
+        `UPDATE challenges SET status = 'active' WHERE id = $1 RETURNING *`,
+        [challengeId]
+      );
+      await client.query('COMMIT');
+      res.json(rows[0]);
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/participants/:userId/kick', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const targetUserId = Number(req.params.userId);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can remove participants' });
+    }
+    if (targetUserId === req.dbUser.id) {
+      return res.status(400).json({ error: 'The originator cannot remove themselves' });
+    }
+    if (challenge.challenge_type === 'tournament_bracket') {
+      const startedRes = await pool.query(
+        'SELECT 1 FROM tournament_matches WHERE challenge_id = $1 LIMIT 1',
+        [challengeId]
+      );
+      if (startedRes.rows.length) {
+        return res.status(400).json({ error: "Can't remove a participant after the tournament has started" });
+      }
+    }
+
+    const { rows } = await pool.query(
+      `UPDATE challenge_participants SET status = 'disqualified'
+       WHERE challenge_id = $1 AND user_id = $2 RETURNING *`,
+      [challengeId, targetUserId]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'That user is not a participant' });
+    res.json(rows[0]);
   } catch (err) {
     next(err);
   }

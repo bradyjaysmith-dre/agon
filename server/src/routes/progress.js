@@ -14,6 +14,9 @@ router.post('/challenges/:id/progress', requireUser, async (req, res, next) => {
     if (challenge.challenge_type !== 'simple_progress') {
       return res.status(400).json({ error: 'This challenge type does not support progress logging' });
     }
+    if (challenge.status !== 'active') {
+      return res.status(400).json({ error: `Challenge is ${challenge.status}, not accepting progress` });
+    }
 
     const participantRes = await pool.query(
       `SELECT 1 FROM challenge_participants WHERE challenge_id = $1 AND user_id = $2`,
@@ -45,6 +48,11 @@ router.post('/:entryId/confirm', requireUser, async (req, res, next) => {
 
     if (entry.user_id === req.dbUser.id) {
       return res.status(403).json({ error: 'Confirmers cannot confirm their own entries' });
+    }
+
+    const challengeRes = await pool.query('SELECT status FROM challenges WHERE id = $1', [entry.challenge_id]);
+    if (challengeRes.rows[0].status !== 'active') {
+      return res.status(400).json({ error: `Challenge is ${challengeRes.rows[0].status}, cannot confirm entries` });
     }
 
     const confirmerRes = await pool.query(
@@ -82,7 +90,7 @@ router.get('/challenges/:id/leaderboard', requireUser, async (req, res, next) =>
        FROM challenge_participants cp
        JOIN users u ON u.id = cp.user_id
        LEFT JOIN progress_entries pe ON pe.challenge_id = cp.challenge_id AND pe.user_id = cp.user_id
-       WHERE cp.challenge_id = $1
+       WHERE cp.challenge_id = $1 AND cp.status = 'active'
        GROUP BY u.id, u.name
        ORDER BY confirmed_value DESC, confirmed_entries DESC`,
       [challengeId]

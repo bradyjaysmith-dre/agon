@@ -107,7 +107,38 @@ router.get('/:id', requireUser, async (req, res, next) => {
       [circleId]
     );
 
-    res.json({ ...circleRes.rows[0], role: membership.role, members: membersRes.rows });
+    res.json({
+      ...circleRes.rows[0],
+      currentUserId: req.dbUser.id,
+      role: membership.role,
+      members: membersRes.rows,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/members/:userId/kick', requireUser, async (req, res, next) => {
+  try {
+    const circleId = Number(req.params.id);
+    const targetUserId = Number(req.params.userId);
+
+    const circleRes = await pool.query('SELECT * FROM circles WHERE id = $1', [circleId]);
+    const circle = circleRes.rows[0];
+    if (!circle) return res.status(404).json({ error: 'Circle not found' });
+    if (circle.owner_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the Circle creator can remove members' });
+    }
+    if (targetUserId === req.dbUser.id) {
+      return res.status(400).json({ error: 'The Circle creator cannot remove themselves' });
+    }
+
+    const { rowCount } = await pool.query(
+      'DELETE FROM circle_members WHERE circle_id = $1 AND user_id = $2',
+      [circleId, targetUserId]
+    );
+    if (!rowCount) return res.status(404).json({ error: 'That user is not a member of this circle' });
+    res.status(204).end();
   } catch (err) {
     next(err);
   }

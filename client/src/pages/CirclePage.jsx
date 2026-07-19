@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useApi } from '../lib/api.js';
-import { button, colors, input, label, page, panel } from '../theme.js';
+import { button, buttonSecondary, colors, input, label, page, panel } from '../theme.js';
 
 export default function CirclePage() {
   const { circleId } = useParams();
@@ -32,6 +32,17 @@ export default function CirclePage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [circleId]);
+
+  async function handleKick(userId) {
+    if (!window.confirm('Remove this member from the Circle?')) return;
+    setError('');
+    try {
+      await api(`/api/circles/${circleId}/members/${userId}/kick`, { method: 'POST' });
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
 
   async function handleCreateChallenge(e) {
     e.preventDefault();
@@ -75,8 +86,18 @@ export default function CirclePage() {
       <div style={panel}>
         <h3 style={{ marginTop: 0 }}>Members</h3>
         {circle.members.map((m) => (
-          <div key={m.id} style={{ fontSize: '14px', color: colors.text }}>
-            {m.name || m.email} <span style={{ color: colors.muted }}>({m.role})</span>
+          <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+            <span style={{ fontSize: '14px', color: colors.text }}>
+              {m.name || m.email} <span style={{ color: colors.muted }}>({m.role})</span>
+            </span>
+            {circle.owner_id === circle.currentUserId && m.id !== circle.currentUserId && (
+              <button
+                style={{ ...buttonSecondary, padding: '2px 8px', fontSize: '12px' }}
+                onClick={() => handleKick(m.id)}
+              >
+                Kick
+              </button>
+            )}
           </div>
         ))}
       </div>
