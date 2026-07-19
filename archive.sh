@@ -19,6 +19,7 @@ rsync -av \
   --exclude 'dist' \
   --exclude '.env' \
   --exclude '.env.local' \
+  --exclude '.claude' \
   "$SRC_DIR"/ "$DEST_DIR"/
 
 echo "Snapshot written to $DEST_DIR"
