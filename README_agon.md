@@ -37,6 +37,11 @@ delegated proxy), climb the leaderboard, earn badges.
   selector when creating a challenge. Gift cards/public board/proof
   uploads/eligibility rules (the original Phase 1 plan) are deferred, not
   cancelled — see `agon-CLAUDE.md`.
+- **0.2.1** (2026-07-19) — Real Intro/About landing page for signed-out
+  visitors (wreath wordmark, agon etymology, About tab), replacing the
+  bare-bones placeholder. One deliberate exception to inline-styles-only:
+  this page has its own scoped CSS file for animations/hover/responsive
+  layout — see `client/src/pages/IntroPage.css`.
 
 ## Stack
 - Frontend: React + Vite (`client/`)
