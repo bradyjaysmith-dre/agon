@@ -81,10 +81,15 @@ router.post('/challenges/:id/start', requireUser, async (req, res, next) => {
     );
     const participantSet = new Set(participantIds);
     const hasOutsideConfirmer = confirmersRes.rows.some((c) => !participantSet.has(c.user_id));
-    if (!hasOutsideConfirmer) {
+    // Two or more confirmers can cross-confirm each other's matches even if
+    // both are playing (each is only ever blocked from recording their own
+    // match, not everyone else's) — so this is fine without a confirmer who
+    // never plays at all, as long as there's more than one confirmer.
+    if (!hasOutsideConfirmer && confirmersRes.rows.length < 2) {
       return res.status(400).json({
         error:
-          "Add a confirmer who isn't playing before starting the tournament (a confirmer can't record the outcome of their own match).",
+          'Add at least one more confirmer before starting the tournament — two confirmers can record ' +
+          "each other's matches even if both are playing, but a single confirmer can't record their own.",
       });
     }
 

@@ -115,10 +115,17 @@ gates which schema/routes/UI apply:
   propagation both live in `tournaments.js` and are covered by a hand-worked
   proof (bye count is always < round-1 match count when bracket size is the
   minimal power of two ≥ N, so no match ever gets two byes) — don't touch
-  that math without re-deriving it. A 2-participant tournament where every
-  confirmer is also a participant is a **hard deadlock** (nobody eligible to
-  record the one match) — `/start` rejects this case explicitly, keep that
-  guard if refactoring.
+  that math without re-deriving it. `/start` requires either one confirmer
+  who never plays, or 2+ confirmers total (relaxed 2026-07-19 at Dre's
+  request — two confirmers can cross-confirm each other's *different*
+  matches even if both are playing; only recording your own match is
+  blocked). This doesn't fully rule out deadlock — if the tournament has
+  exactly those 2 confirmers as its only 2 participants, their one shared
+  match still can't be recorded by either — but confirmers can be added to
+  a challenge at any time via `ConfirmersPanel`, even mid-tournament, so
+  that's now a self-service fix rather than something `/start` needs to
+  prevent outright. Keep that recoverability in mind before re-tightening
+  this guard.
 - Adding a third type follows the same pattern: new `challenge_type` enum
   value, its own route file if the mechanics differ enough, its own
   frontend component, and `ChallengePage.jsx` dispatches on
