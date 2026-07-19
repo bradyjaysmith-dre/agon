@@ -2,6 +2,8 @@
 
 Use this to set up a new Claude Project for Agon. Paste the block below into the Project's **custom instructions**, then update it as decisions get made (this mirrors the pattern already working well for the Pandora Bingo project).
 
+**Status note (2026-07-19):** the block below is the original pre-build snapshot and is now out of date on phase/repo status (left as-is for history — see the corrections inline). `agon-CLAUDE.md` in this repo is the actively maintained living doc for Claude Code sessions; treat it as authoritative over this file for anything current.
+
 ---
 
 ## Suggested Project Instructions (paste into new Project)
@@ -19,8 +21,13 @@ optionally require entrants to pay into the prize pool. Dre
 
 Current phase: Phase 0 — family beta MVP. No cash prizes, no public
 board yet. See the Agon Vision Document for full phased roadmap.
+[Outdated as of 2026-07-19 — Phase 0 shipped and passed testing; Phase 1
+is in progress, pivoted to customizable challenge types. See
+agon-CLAUDE.md.]
 
 Repo: agon (not yet created / created on [DATE])
+[Outdated — repo exists at github.com/bradyjaysmith-dre/agon, deployed to
+Railway, auto-deploying on push to main.]
 README file: README_agon.md (matches Pandora Bingo's naming convention
 to distinguish it from other project READMEs across chat sessions)
 

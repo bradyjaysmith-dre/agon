@@ -28,6 +28,13 @@ rules — several of them (what restart clears vs. keeps, why kick is
 blocked mid-tournament, why deleting a challenge doesn't delete badges)
 are not obvious from the route names alone.
 
+**Lifecycle/moderation features tested and passed by Dre (2026-07-19),
+same day they shipped.** Everything built during the Phase 1 pivot so far
+(challenge types, tournament brackets, lifecycle/moderation) is now
+confirmed working through the real UI, not just verified against
+Postgres directly. Next real decision point is what to build next — see
+"Next Session Tasks" below.
+
 Phase 0 skeleton built (2026-07-19) and deployed to Railway the same day:
 Express + Postgres backend, Clerk auth, Circle invite-code join flow,
 challenge creation, progress logging + confirmer approval, leaderboard,
@@ -254,13 +261,13 @@ needs revisiting.
   Railway/Nixpacks (the gotcha that bit Pandora Bingo)
 
 ## Next Session Tasks
-1. Dre needs to manually test the tournament bracket flow end-to-end in the
-   browser (create a `tournament_bracket` challenge, join with 3+ accounts,
-   start it, record match results as a non-competing confirmer, confirm the
-   champion badge lands) — this was verified at the SQL/algorithm level
-   during development but not yet through the real UI with real accounts.
+1. **Open decision for Dre:** continue adding challenge types (a third
+   type? which one?), resume the original Phase 1 plan (gift cards via
+   Tremendous, public board with moderation, proof-of-completion uploads,
+   expanded eligibility rules), or something else — nothing is currently
+   in progress, this is a genuine "what's next" checkpoint.
 2. The "Streaker" badge still has no award logic (exists in the catalog,
-   nothing grants it) — pre-existing gap, not part of this pass.
-3. Once challenge types are confirmed working, either continue adding types
-   or resume the original Phase 1 plan (gift cards, public board, proof
-   uploads, eligibility rules) — ask Dre which.
+   nothing grants it) — pre-existing gap from Phase 0, never picked up.
+3. `~/A1-READ_THIS--NOTES FOR CLAUDE FOR NEXT TIME.md` (per the global
+   CLAUDE.md) is worth checking at the start of the next session in case
+   Dre left notes there outside this conversation.

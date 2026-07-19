@@ -59,6 +59,9 @@ delegated proxy), climb the leaderboard, earn badges.
   the exact rules (new `paused` status, what restart clears vs. keeps,
   why kicking a tournament participant is blocked once the bracket has
   started).
+- **0.2.4** (2026-07-19) — Dre tested the lifecycle/moderation features
+  (pause/resume, cancel, delete, restart, kick a participant, remove a
+  Circle member): **passed.**
 
 ## Stack
 - Frontend: React + Vite (`client/`)
@@ -126,9 +129,12 @@ railway redeploy --service agon-client   # VITE_* vars are baked at build time
 
 ## Data Model
 `users`, `circles`, `circle_members`, `challenges`, `challenge_participants`,
-`challenge_confirmers`, `progress_entries`, `badges`, `user_badges`. Full
-detail in `server/migrations/001_init.sql`. `prizes`/`payouts` tables are
-intentionally not built yet — see the Legal Gate below.
+`challenge_confirmers`, `progress_entries`, `tournament_matches`, `badges`,
+`user_badges`. Full detail across `server/migrations/001_init.sql` (base
+schema), `002_tournament_brackets.sql` (`challenge_type`,
+`tournament_matches`), and `003_challenge_lifecycle.sql` (`paused` status).
+`prizes`/`payouts` tables are intentionally not built yet — see the Legal
+Gate below.
 
 ## ⚠ Legal Gate — Cash Prizes
 Do not build entry-fee or cash-payout code without an explicit go-ahead —
@@ -136,10 +142,15 @@ see `agon-CLAUDE.md` and the Agon Vision Document §7. Phase 0–1 (badges,
 then gift cards) carry none of this risk.
 
 ## Roadmap
-- **Phase 0 (current)** — Family beta: Circles, challenges, progress
+- **Phase 0 — done, tested and passed.** Circles, challenges, progress
   tracking, confirmer approval, leaderboard, badges.
-- **Phase 1** — Gift-card prizes (Tremendous/Tango Card), public board with
-  moderation, proof-of-completion uploads.
+- **Phase 1 — in progress, pivoted to customizable challenge types.**
+  Shipped and tested: `challenge_type` architecture, single-elimination
+  tournament brackets, challenge lifecycle management (pause/cancel/
+  delete/restart/kick), Circle member removal. The original Phase 1 plan
+  (gift-card prizes via Tremendous/Tango Card, public board with
+  moderation, proof-of-completion uploads, expanded eligibility rules) is
+  deferred, not cancelled — see `agon-CLAUDE.md`.
 - **Phase 2** — Cash prize pools, conditional on legal review.
 - **Phase 3** — React Native/Expo app store builds.
 
