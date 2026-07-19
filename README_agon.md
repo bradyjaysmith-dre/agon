@@ -28,6 +28,8 @@ delegated proxy), climb the leaderboard, earn badges.
   Also made challenge cards on the Circle page visibly clickable (previously
   looked like a static panel, no affordance to open the challenge detail
   page where progress/leaderboard/confirm live).
+- **0.1.4** (2026-07-19) — Dre re-tested end-to-end: **Phase 0 passed.**
+  Ready for family beta invites.
 
 ## Stack
 - Frontend: React + Vite (`client/`)

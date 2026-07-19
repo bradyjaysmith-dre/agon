@@ -8,6 +8,13 @@ from the suite's shared conventions in several places. Treat the deviations
 below as intentional, not gaps to "fix" toward suite consistency.
 
 ## Status
+**Phase 0 manually tested end-to-end by Dre (2026-07-19) — passed.** Two
+bugs found during that testing (progress-logging route mismatch, unclear
+challenge-card click affordance) were fixed same day (see version log in
+`README_agon.md`). Ready for actual family beta invites — next real
+milestone is getting relatives using it, not more engineering, unless
+testing surfaces something new.
+
 Phase 0 skeleton built (2026-07-19) and deployed to Railway the same day:
 Express + Postgres backend, Clerk auth, Circle invite-code join flow,
 challenge creation, progress logging + confirmer approval, leaderboard,
