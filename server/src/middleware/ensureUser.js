@@ -1,12 +1,16 @@
-import { clerkClient, getAuth, requireAuth } from '@clerk/express';
+import { clerkClient, getAuth } from '@clerk/express';
 import { pool } from '../db.js';
 
+// requireAuth() from @clerk/express unconditionally redirects unauthenticated
+// requests (built for server-rendered apps) — wrong for a JSON API, so we
+// check getAuth() directly and return a proper 401 instead.
+//
 // Chain: verifies the Clerk session, then upserts a local `users` row keyed
 // by clerk_user_id so the rest of the app can join against integer ids.
 export const requireUser = [
-  requireAuth(),
   async (req, res, next) => {
     const { userId } = getAuth(req);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
       const existing = await pool.query('SELECT * FROM users WHERE clerk_user_id = $1', [
         userId,
