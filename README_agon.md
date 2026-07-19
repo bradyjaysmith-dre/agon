@@ -14,9 +14,12 @@ delegated proxy), climb the leaderboard, earn badges.
   board, no gift cards, no cash — see roadmap below.
 - **0.1.1** (2026-07-19) — Deployed to Railway (auto-deploy on push to
   `main`): https://agon-server-production-30c9.up.railway.app (API),
-  https://agon-client-production.up.railway.app (frontend). Not yet
-  usable end-to-end — real Clerk keys still need to be set on Railway,
-  see `agon-CLAUDE.md` Status section for the exact commands.
+  https://agon-client-production.up.railway.app (frontend).
+- **0.1.2** (2026-07-19) — Real Clerk test-mode keys wired up on both
+  services; fixed a bug where `@clerk/express`'s `requireAuth()` redirected
+  unauthenticated API requests instead of returning JSON (see
+  `agon-CLAUDE.md`). Verified end-to-end: backend correctly returns
+  `401 {"error":"Unauthorized"}` for missing/invalid auth.
 
 ## Stack
 - Frontend: React + Vite (`client/`)

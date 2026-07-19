@@ -19,17 +19,23 @@ auto-deploying on every push to `main`. Live URLs:
 - Backend: https://agon-server-production-30c9.up.railway.app
 - Frontend: https://agon-client-production.up.railway.app
 
-**Only remaining manual step before this is actually usable:** a real
-Clerk application. `CLERK_SECRET_KEY` / `CLERK_PUBLISHABLE_KEY` (on
-`agon-server`) and `VITE_CLERK_PUBLISHABLE_KEY` (on `agon-client`, build-time —
-requires a redeploy after setting, not just a restart) are still unset on
-Railway. The frontend deliberately hard-crashes on load without the Clerk
-key (see `client/src/main.jsx`) rather than running broken, so the deployed
-site will show that error page until this is done. Once Dre has real keys:
-`railway variable set CLERK_SECRET_KEY=... CLERK_PUBLISHABLE_KEY=... --service agon-server`
-then `railway variable set VITE_CLERK_PUBLISHABLE_KEY=... --service agon-client`
-followed by `railway redeploy --service agon-client` (build-time var, needs
-a rebuild, not just a restart).
+Clerk is fully wired up as of 2026-07-19 (test-mode instance —
+`pk_test_.../sk_test_...`, fine for family beta, no need for a production
+Clerk instance yet): `CLERK_SECRET_KEY`/`CLERK_PUBLISHABLE_KEY` set on
+`agon-server`, `VITE_CLERK_PUBLISHABLE_KEY` set on `agon-client` (same
+publishable key value on both). Verified end-to-end against the live
+deploy: unauthenticated/invalid-token requests to `agon-server` correctly
+return `401 {"error":"Unauthorized"}`, not a crash or redirect.
+
+**Known Clerk/Express gotcha fixed:** `requireAuth()` from `@clerk/express`
+unconditionally does `response.redirect(signInUrl)` for any unauthenticated
+request — no content negotiation, no JSON option, built for server-rendered
+apps. Wrong for a pure JSON API like this one (there's no sign-in page on
+the API's own domain, so it was redirecting to a 404). Fixed in
+`server/src/middleware/ensureUser.js` by checking `getAuth(req).userId`
+directly and returning `res.status(401).json(...)` instead of using
+`requireAuth()`. Keep this in mind for any new Clerk-gated route — don't
+reach for `requireAuth()` here.
 
 ## Location & Deployment
 - Path: `~/projects/agon`
