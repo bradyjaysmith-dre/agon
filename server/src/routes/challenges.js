@@ -147,6 +147,53 @@ router.get('/:id', requireUser, async (req, res, next) => {
   }
 });
 
+router.patch('/:id', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can edit a challenge' });
+    }
+
+    const { title, description, confirmationTiming } = req.body ?? {};
+    const setClauses = [];
+    const values = [];
+
+    if (title !== undefined) {
+      if (!title.trim()) return res.status(400).json({ error: 'title cannot be empty' });
+      values.push(title.trim());
+      setClauses.push(`title = $${values.length}`);
+    }
+    if (description !== undefined) {
+      values.push(description);
+      setClauses.push(`description = $${values.length}`);
+    }
+    if (confirmationTiming !== undefined) {
+      if (challenge.challenge_type !== 'simple_progress') {
+        return res.status(400).json({ error: 'confirmationTiming only applies to simple_progress challenges' });
+      }
+      if (!['per_entry', 'completion_only'].includes(confirmationTiming)) {
+        return res.status(400).json({ error: 'confirmationTiming must be per_entry or completion_only' });
+      }
+      values.push(confirmationTiming);
+      setClauses.push(`confirmation_timing = $${values.length}`);
+    }
+    if (setClauses.length === 0) {
+      return res.status(400).json({ error: 'No editable fields provided' });
+    }
+
+    values.push(challengeId);
+    const { rows } = await pool.query(
+      `UPDATE challenges SET ${setClauses.join(', ')} WHERE id = $${values.length} RETURNING *`,
+      values
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/:id/join', requireUser, async (req, res, next) => {
   try {
     const challengeId = Number(req.params.id);

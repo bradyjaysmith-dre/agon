@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ConfirmersPanel from '../components/ConfirmersPanel.jsx';
+import EditChallengeForm from '../components/EditChallengeForm.jsx';
 import SimpleProgressView from '../components/SimpleProgressView.jsx';
 import TournamentBracketView from '../components/TournamentBracketView.jsx';
 import { useApi } from '../lib/api.js';
-import { button, colors, page } from '../theme.js';
+import { button, buttonSecondary, colors, page } from '../theme.js';
 
 export default function ChallengePage() {
   const { challengeId } = useParams();
@@ -14,6 +15,7 @@ export default function ChallengePage() {
   const [bracket, setBracket] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   async function load() {
     try {
@@ -35,6 +37,7 @@ export default function ChallengePage() {
   }, [challengeId]);
 
   const isParticipant = challenge?.participants.some((p) => p.id === challenge.currentUserId);
+  const isOriginator = challenge?.originator_id === challenge?.currentUserId;
   const tournamentStarted = challenge?.challenge_type === 'tournament_bracket' && bracket && bracket.length > 0;
 
   async function handleJoin() {
@@ -63,17 +66,38 @@ export default function ChallengePage() {
       <Link to={`/circles/${challenge.circle_id}`} style={{ color: colors.muted, fontSize: '13px' }}>
         ← Circle
       </Link>
-      <h1>{challenge.title}</h1>
-      <p style={{ color: colors.muted }}>{challenge.description}</p>
-      <p style={{ color: colors.muted, fontSize: '13px' }}>
-        Status: {challenge.status} ·{' '}
-        {challenge.challenge_type === 'tournament_bracket'
-          ? 'tournament bracket'
-          : challenge.confirmation_timing === 'per_entry'
-            ? 'confirmed per entry'
-            : 'confirmed at completion'}
-      </p>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
+
+      {editing ? (
+        <EditChallengeForm
+          challenge={challenge}
+          onSaved={async () => {
+            setEditing(false);
+            await load();
+          }}
+          onCancel={() => setEditing(false)}
+        />
+      ) : (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <h1 style={{ marginBottom: 0 }}>{challenge.title}</h1>
+            {isOriginator && (
+              <button style={buttonSecondary} onClick={() => setEditing(true)}>
+                Edit
+              </button>
+            )}
+          </div>
+          <p style={{ color: colors.muted }}>{challenge.description}</p>
+          <p style={{ color: colors.muted, fontSize: '13px' }}>
+            Status: {challenge.status} ·{' '}
+            {challenge.challenge_type === 'tournament_bracket'
+              ? 'tournament bracket'
+              : challenge.confirmation_timing === 'per_entry'
+                ? 'confirmed per entry'
+                : 'confirmed at completion'}
+          </p>
+        </>
+      )}
 
       {!isParticipant && challenge.status === 'active' && !tournamentStarted && (
         <button style={button} onClick={handleJoin} disabled={busy}>
