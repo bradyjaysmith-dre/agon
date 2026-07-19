@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import ConfirmersPanel from '../components/ConfirmersPanel.jsx';
 import SimpleProgressView from '../components/SimpleProgressView.jsx';
 import TournamentBracketView from '../components/TournamentBracketView.jsx';
 import { useApi } from '../lib/api.js';
@@ -79,6 +80,8 @@ export default function ChallengePage() {
           Join Challenge
         </button>
       )}
+
+      <ConfirmersPanel challenge={challenge} onReload={load} />
 
       {challenge.challenge_type === 'tournament_bracket' ? (
         <TournamentBracketView challenge={challenge} bracket={bracket} onReload={load} />

@@ -103,7 +103,7 @@ router.get('/:id', requireUser, async (req, res, next) => {
     if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
     if (!membership) return res.status(403).json({ error: 'Not a member of this circle' });
 
-    const [participants, confirmers, entries] = await Promise.all([
+    const [participants, confirmers, entries, circleMembers] = await Promise.all([
       pool.query(
         `SELECT u.id, u.name, cp.status, cp.joined_at
          FROM challenge_participants cp JOIN users u ON u.id = cp.user_id
@@ -125,6 +125,12 @@ router.get('/:id', requireUser, async (req, res, next) => {
          ORDER BY pe.created_at DESC`,
         [challengeId]
       ),
+      pool.query(
+        `SELECT u.id, u.name
+         FROM circle_members cm JOIN users u ON u.id = cm.user_id
+         WHERE cm.circle_id = $1 ORDER BY u.name`,
+        [challenge.circle_id]
+      ),
     ]);
 
     res.json({
@@ -134,6 +140,7 @@ router.get('/:id', requireUser, async (req, res, next) => {
       participants: participants.rows,
       confirmers: confirmers.rows,
       entries: entries.rows,
+      circleMembers: circleMembers.rows,
     });
   } catch (err) {
     next(err);
@@ -161,6 +168,34 @@ router.post('/:id/join', requireUser, async (req, res, next) => {
       `INSERT INTO challenge_participants (challenge_id, user_id) VALUES ($1, $2)
        ON CONFLICT (challenge_id, user_id) DO NOTHING`,
       [challengeId, req.dbUser.id]
+    );
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/confirmers', requireUser, async (req, res, next) => {
+  try {
+    const challengeId = Number(req.params.id);
+    const { challenge } = await loadChallengeForMember(challengeId, req.dbUser.id);
+    if (!challenge) return res.status(404).json({ error: 'Challenge not found' });
+    if (challenge.originator_id !== req.dbUser.id) {
+      return res.status(403).json({ error: 'Only the originator can add confirmers' });
+    }
+
+    const { userId } = req.body ?? {};
+    if (!userId) return res.status(400).json({ error: 'userId is required' });
+
+    const targetMembership = await loadMembership(challenge.circle_id, userId);
+    if (!targetMembership) {
+      return res.status(400).json({ error: 'That user is not a member of this circle' });
+    }
+
+    await pool.query(
+      `INSERT INTO challenge_confirmers (challenge_id, user_id, added_by) VALUES ($1, $2, $3)
+       ON CONFLICT (challenge_id, user_id) DO NOTHING`,
+      [challengeId, userId, req.dbUser.id]
     );
     res.status(204).end();
   } catch (err) {
