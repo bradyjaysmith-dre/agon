@@ -62,6 +62,15 @@ delegated proxy), climb the leaderboard, earn badges.
 - **0.2.4** (2026-07-19) — Dre tested the lifecycle/moderation features
   (pause/resume, cancel, delete, restart, kick a participant, remove a
   Circle member): **passed.**
+- **0.3.0** (2026-07-19) — Visual redesign: the Intro page's ancient-Greek
+  theme (Cinzel/Cormorant Garamond/Source Serif 4 fonts, ink/bone/clay/
+  bronze/olive palette) now extends across the whole authenticated app,
+  replacing the plain generic dark theme it had before. `theme.js`'s
+  structural styles are CSS classes now (`client/src/app.css`), not inline
+  style objects, so buttons/links get real hover states. New reusable
+  `Laurel` wreath component (same wreath as the Intro page's wordmark)
+  frames earned badges and the tournament champion banner — the two
+  moments in the app that are actually about winning.
 
 ## Stack
 - Frontend: React + Vite (`client/`)

@@ -32,7 +32,18 @@ are not obvious from the route names alone.
 same day they shipped.** Everything built during the Phase 1 pivot so far
 (challenge types, tournament brackets, lifecycle/moderation) is now
 confirmed working through the real UI, not just verified against
-Postgres directly. Next real decision point is what to build next — see
+Postgres directly.
+
+**Full visual redesign (2026-07-19).** Dre asked for the Intro page's
+ancient-Greek theme and laurel motif to extend across the whole app —
+see "Frontend Styling" below. This is a real, deliberate divergence from
+the Coherence Suite's "inline styles only" convention (per the global
+`~/.claude/CLAUDE.md`) — don't try to "fix" the app back toward inline
+styles, the app never actually committed to that convention in this file
+to begin with, and the CSS-class approach is now load-bearing for hover
+states and the shared font/color system.
+
+Next real decision point is what to build next — see
 "Next Session Tasks" below.
 
 Phase 0 skeleton built (2026-07-19) and deployed to Railway the same day:
@@ -184,6 +195,39 @@ which checks `tournament_matches`), and reload via `ChallengePage.jsx`'s
   touch their history in challenges they already joined within that
   Circle, only revokes future circle-scoped access (`loadMembership`
   returns null for them going forward). Owner can't remove themselves.
+
+## Frontend Styling (added 2026-07-19)
+The whole authenticated app now shares the Intro page's ancient-Greek
+theme — Cinzel headings, Cormorant Garamond italics, Source Serif 4 body
+text, IBM Plex Mono for labels/nav, and the ink/bone/clay/bronze/olive
+palette (`:root` CSS variables in `client/src/app.css`).
+- **`client/src/theme.js`'s structural exports changed shape.**
+  `page`/`panel`/`button`/`buttonSecondary`/`input`/`label`/`link` are
+  **CSS class name strings** now (backed by `app.css`), not inline style
+  objects — use `className={panel}`, not `style={panel}`. `colors` is
+  still a plain hex-value object, unchanged, for dynamic/conditional
+  inline styles (`color: entry.confirmed ? colors.success : colors.muted`
+  patterns are still fine and common). Mixing both on one element is
+  normal: `className={button} style={{ marginTop: '12px' }}` for a
+  one-off layout tweak on top of the base class.
+- **`client/src/components/Laurel.jsx`** — reusable wreath (same SVG
+  paths as the Intro page's wordmark wreath), frames arbitrary children
+  at any size via a `size` prop. Used on earned badges (`BadgesPage.jsx`)
+  and the tournament champion banner (`TournamentBracketView.jsx`) — the
+  two moments in the app actually about winning. Reach for this before
+  inventing a new decorative treatment for anything achievement-shaped.
+- **`client/src/components/Divider.jsx`** — the line + `ἀγών` glyph
+  section-break motif from the Intro page, generalized. Used under page
+  `<h1>`s for chrome consistency; it's decorative, not a label — don't
+  pass literal English text as the `glyph` prop, that breaks the motif
+  (learned this the first time, fixed before shipping).
+- `client/src/pages/IntroPage.css` no longer duplicates the font
+  `@import` or color variables (both are global now) — it only holds
+  what's still specific to the Intro page (wreath-draw animation, hero
+  reveal sequence, its own responsive layout).
+- This is a real divergence from the Coherence Suite's "inline styles
+  only" convention (see Status above) — expected and fine, don't revert
+  toward inline styles when touching these files.
 
 ## Data Model Sketch (starting point — see vision doc §9 for full detail)
 `users`, `circles`, `circle_members`, `challenges`, `challenge_participants`,
