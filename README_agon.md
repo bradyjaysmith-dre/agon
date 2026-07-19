@@ -20,6 +20,14 @@ delegated proxy), climb the leaderboard, earn badges.
   unauthenticated API requests instead of returning JSON (see
   `agon-CLAUDE.md`). Verified end-to-end: backend correctly returns
   `401 {"error":"Unauthorized"}` for missing/invalid auth.
+- **0.1.3** (2026-07-19) — Fixed family-beta-blocking bug found by Dre in
+  manual testing: the "Log Progress" button 404'd on every submission
+  (frontend called `/api/challenges/:id/progress`, but that route only
+  exists at `/api/progress/challenges/:id/progress` — a leftover mismatch
+  from splitting routes into `circles.js`/`challenges.js`/`progress.js`).
+  Also made challenge cards on the Circle page visibly clickable (previously
+  looked like a static panel, no affordance to open the challenge detail
+  page where progress/leaderboard/confirm live).
 
 ## Stack
 - Frontend: React + Vite (`client/`)
