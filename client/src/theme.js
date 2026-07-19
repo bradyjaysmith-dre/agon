@@ -1,68 +1,22 @@
-// Shared inline-style building blocks — no CSS framework, dark theme only.
+// Structural styles (page/panel/button/field/link) are CSS classes now,
+// defined in app.css — see that file for the ancient-Greek palette this
+// maps to. `colors` stays as hex values for the dynamic/conditional inline
+// styles scattered through components (e.g. `color: entry.confirmed ? colors.success : colors.muted`).
 export const colors = {
-  bg: '#121212',
-  panel: '#1c1c1c',
-  border: '#333',
-  text: '#e8e8e8',
-  muted: '#999',
-  accent: '#4f8cff',
-  danger: '#ff5c5c',
-  success: '#4caf50',
+  bg: '#15120d',
+  panel: '#1b1710',
+  border: '#3a3327',
+  text: '#ede3cf',
+  muted: '#c9bfa9',
+  accent: '#c79a4b',
+  danger: '#b23a3a',
+  success: '#6c7a4e',
 };
 
-export const page = {
-  minHeight: '100vh',
-  background: colors.bg,
-  color: colors.text,
-  padding: '24px',
-  maxWidth: '840px',
-  margin: '0 auto',
-};
-
-export const panel = {
-  background: colors.panel,
-  border: `1px solid ${colors.border}`,
-  borderRadius: '10px',
-  padding: '16px',
-  marginBottom: '16px',
-};
-
-export const button = {
-  background: colors.accent,
-  color: '#fff',
-  border: 'none',
-  borderRadius: '6px',
-  padding: '8px 14px',
-  cursor: 'pointer',
-  fontSize: '14px',
-};
-
-export const buttonSecondary = {
-  ...button,
-  background: 'transparent',
-  border: `1px solid ${colors.border}`,
-  color: colors.text,
-};
-
-export const input = {
-  background: '#0e0e0e',
-  border: `1px solid ${colors.border}`,
-  borderRadius: '6px',
-  color: colors.text,
-  padding: '8px 10px',
-  fontSize: '14px',
-  width: '100%',
-};
-
-export const label = {
-  display: 'block',
-  fontSize: '13px',
-  color: colors.muted,
-  marginBottom: '4px',
-  marginTop: '10px',
-};
-
-export const link = {
-  color: colors.accent,
-  textDecoration: 'none',
-};
+export const page = 'page';
+export const panel = 'panel';
+export const button = 'btn';
+export const buttonSecondary = 'btn-secondary';
+export const input = 'field';
+export const label = 'field-label';
+export const link = 'link';

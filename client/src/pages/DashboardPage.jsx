@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Divider from '../components/Divider.jsx';
 import { useApi } from '../lib/api.js';
 import { button, colors, input, label, page, panel } from '../theme.js';
 
@@ -57,8 +58,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={page}>
+    <div className={page}>
       <h1>Your Circles</h1>
+      <Divider />
       {error && <p style={{ color: colors.danger }}>{error}</p>}
 
       {circles === null ? (
@@ -67,8 +69,8 @@ export default function DashboardPage() {
         <p style={{ color: colors.muted }}>You're not in any Circles yet.</p>
       ) : (
         circles.map((circle) => (
-          <Link key={circle.id} to={`/circles/${circle.id}`} style={{ textDecoration: 'none' }}>
-            <div style={{ ...panel, cursor: 'pointer' }}>
+          <Link key={circle.id} to={`/circles/${circle.id}`}>
+            <div className={panel} style={{ cursor: 'pointer' }}>
               <strong>{circle.name}</strong>
               <div style={{ color: colors.muted, fontSize: '13px' }}>
                 Invite code: {circle.invite_code} · {circle.role}
@@ -79,30 +81,30 @@ export default function DashboardPage() {
       )}
 
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '24px' }}>
-        <form onSubmit={handleCreate} style={{ ...panel, flex: 1, minWidth: '260px' }}>
+        <form onSubmit={handleCreate} className={panel} style={{ flex: 1, minWidth: '260px' }}>
           <h3 style={{ marginTop: 0 }}>Create a Circle</h3>
-          <label style={label}>Name</label>
+          <label className={label}>Name</label>
           <input
-            style={input}
+            className={input}
             value={newCircleName}
             onChange={(e) => setNewCircleName(e.target.value)}
             placeholder="Smith Family"
           />
-          <button type="submit" style={{ ...button, marginTop: '12px' }} disabled={busy}>
+          <button type="submit" className={button} style={{ marginTop: '12px' }} disabled={busy}>
             Create
           </button>
         </form>
 
-        <form onSubmit={handleJoin} style={{ ...panel, flex: 1, minWidth: '260px' }}>
+        <form onSubmit={handleJoin} className={panel} style={{ flex: 1, minWidth: '260px' }}>
           <h3 style={{ marginTop: 0 }}>Join a Circle</h3>
-          <label style={label}>Invite code</label>
+          <label className={label}>Invite code</label>
           <input
-            style={input}
+            className={input}
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value)}
             placeholder="AB12CD"
           />
-          <button type="submit" style={{ ...button, marginTop: '12px' }} disabled={busy}>
+          <button type="submit" className={button} style={{ marginTop: '12px' }} disabled={busy}>
             Join
           </button>
         </form>

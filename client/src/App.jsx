@@ -5,7 +5,6 @@ import ChallengePage from './pages/ChallengePage.jsx';
 import CirclePage from './pages/CirclePage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import IntroPage from './pages/IntroPage.jsx';
-import { colors, link } from './theme.js';
 
 export default function App() {
   return (
@@ -15,21 +14,13 @@ export default function App() {
       </SignedOut>
 
       <SignedIn>
-        <div style={{ minHeight: '100vh', background: colors.bg }}>
-          <header
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '16px 24px',
-              borderBottom: `1px solid ${colors.border}`,
-            }}
-          >
-            <Link to="/" style={{ ...link, fontSize: '20px', fontWeight: 700, color: colors.text }}>
-              Agon
+        <div style={{ minHeight: '100vh' }}>
+          <header className="app-header">
+            <Link to="/" className="brand">
+              A<span>·</span>GON
             </Link>
-            <nav style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <Link to="/badges" style={link}>
+            <nav style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <Link to="/badges" className="nav-link">
                 Badges
               </Link>
               <UserButton afterSignOutUrl="/" />

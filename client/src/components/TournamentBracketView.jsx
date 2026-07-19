@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApi } from '../lib/api.js';
+import Laurel from './Laurel.jsx';
 import { buttonSecondary, colors, panel } from '../theme.js';
 
 export default function TournamentBracketView({ challenge, bracket, onReload }) {
@@ -39,7 +40,7 @@ export default function TournamentBracketView({ challenge, bracket, onReload }) 
   if (!started) {
     const count = challenge.participants.length;
     return (
-      <div style={panel}>
+      <div className={panel}>
         <h3 style={{ marginTop: 0 }}>Tournament Bracket</h3>
         {error && <p style={{ color: colors.danger }}>{error}</p>}
         <p style={{ color: colors.muted }}>
@@ -47,7 +48,7 @@ export default function TournamentBracketView({ challenge, bracket, onReload }) 
         </p>
         {isOriginator && challenge.status === 'active' && (
           <>
-            <button style={buttonSecondary} onClick={handleStart} disabled={busy || count < 2}>
+            <button className={buttonSecondary} onClick={handleStart} disabled={busy || count < 2}>
               Start Tournament
             </button>
             {count < 2 && (
@@ -85,10 +86,19 @@ export default function TournamentBracketView({ challenge, bracket, onReload }) 
   }
 
   return (
-    <div style={panel}>
+    <div className={panel}>
       <h3 style={{ marginTop: 0 }}>Tournament Bracket</h3>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
-      {champion && <p style={{ color: colors.success, fontWeight: 600 }}>🏆 Champion: {champion}</p>}
+      {champion && (
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 20px' }}>
+          <Laurel size={220} color="var(--bronze)">
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '22px' }}>🏆</div>
+              <strong style={{ color: colors.text }}>{champion}</strong>
+            </div>
+          </Laurel>
+        </div>
+      )}
 
       {roundNumbers.map((round) => (
         <div key={round} style={{ marginBottom: '16px' }}>
@@ -119,7 +129,8 @@ export default function TournamentBracketView({ challenge, bracket, onReload }) 
                       <span style={{ fontWeight: match.winner_id === id ? 700 : 400 }}>{matchLabel(match, slot)}</span>
                       {match.status === 'ready' && challenge.isConfirmer && (
                         <button
-                          style={{ ...buttonSecondary, padding: '2px 8px', fontSize: '12px' }}
+                          className={buttonSecondary}
+                          style={{ padding: '2px 8px', fontSize: '12px' }}
                           onClick={() => handleRecord(match.id, id)}
                           disabled={busy}
                         >

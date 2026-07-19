@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApi } from '../lib/api.js';
+import Laurel from './Laurel.jsx';
 import { button, buttonSecondary, colors, input, label, panel } from '../theme.js';
 
 export default function SimpleProgressView({ challenge, leaderboard, isParticipant, onReload }) {
@@ -46,11 +47,12 @@ export default function SimpleProgressView({ challenge, leaderboard, isParticipa
     <>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
 
-      <div style={panel}>
+      <div className={panel}>
         <h3 style={{ marginTop: 0 }}>Leaderboard</h3>
         {leaderboard?.map((row, i) => (
-          <div key={row.user_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
-            <span>
+          <div key={row.user_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {i === 0 && Number(row.confirmed_entries) > 0 && <Laurel size={28} />}
               {i + 1}. {row.name}
             </span>
             <span style={{ color: colors.muted }}>
@@ -61,19 +63,19 @@ export default function SimpleProgressView({ challenge, leaderboard, isParticipa
       </div>
 
       {isParticipant && challenge.status === 'active' && (
-        <form onSubmit={handleLogProgress} style={panel}>
+        <form onSubmit={handleLogProgress} className={panel}>
           <h3 style={{ marginTop: 0 }}>Log Progress</h3>
-          <label style={label}>Value (optional, e.g. reps / dollars / days)</label>
-          <input style={input} value={value} onChange={(e) => setValue(e.target.value)} type="number" />
-          <label style={label}>Description</label>
-          <input style={input} value={description} onChange={(e) => setDescription(e.target.value)} />
-          <button type="submit" style={{ ...button, marginTop: '12px' }} disabled={busy}>
+          <label className={label}>Value (optional, e.g. reps / dollars / days)</label>
+          <input className={input} value={value} onChange={(e) => setValue(e.target.value)} type="number" />
+          <label className={label}>Description</label>
+          <input className={input} value={description} onChange={(e) => setDescription(e.target.value)} />
+          <button type="submit" className={button} style={{ marginTop: '12px' }} disabled={busy}>
             Submit
           </button>
         </form>
       )}
 
-      <div style={panel}>
+      <div className={panel}>
         <h3 style={{ marginTop: 0 }}>Progress Entries</h3>
         {challenge.entries.length === 0 && <p style={{ color: colors.muted }}>No entries yet.</p>}
         {challenge.entries.map((entry) => (
@@ -86,7 +88,7 @@ export default function SimpleProgressView({ challenge, leaderboard, isParticipa
               {entry.confirmed_by ? (
                 <span style={{ color: colors.success }}>Confirmed by {entry.confirmed_by_name}</span>
               ) : challenge.isConfirmer ? (
-                <button style={buttonSecondary} onClick={() => handleConfirm(entry.id)} disabled={busy}>
+                <button className={buttonSecondary} onClick={() => handleConfirm(entry.id)} disabled={busy}>
                   Confirm
                 </button>
               ) : (
@@ -98,7 +100,7 @@ export default function SimpleProgressView({ challenge, leaderboard, isParticipa
       </div>
 
       {challenge.isConfirmer && challenge.status === 'active' && (
-        <button style={buttonSecondary} onClick={handleComplete} disabled={busy}>
+        <button className={buttonSecondary} onClick={handleComplete} disabled={busy}>
           Mark Challenge Complete
         </button>
       )}

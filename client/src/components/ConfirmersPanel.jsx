@@ -32,7 +32,7 @@ export default function ConfirmersPanel({ challenge, onReload }) {
   }
 
   return (
-    <div style={panel}>
+    <div className={panel}>
       <h3 style={{ marginTop: 0 }}>Confirmers</h3>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
       {challenge.confirmers.map((c) => (
@@ -45,11 +45,7 @@ export default function ConfirmersPanel({ challenge, onReload }) {
         <>
           {available.length > 0 ? (
             <form onSubmit={handleAdd} style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-              <select
-                style={input}
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-              >
+              <select className={input} value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
                 <option value="">Add a confirmer…</option>
                 {available.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -57,7 +53,7 @@ export default function ConfirmersPanel({ challenge, onReload }) {
                   </option>
                 ))}
               </select>
-              <button type="submit" style={button} disabled={busy || !selectedUserId}>
+              <button type="submit" className={button} disabled={busy || !selectedUserId}>
                 Add
               </button>
             </form>

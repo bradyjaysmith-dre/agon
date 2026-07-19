@@ -24,7 +24,7 @@ export default function ParticipantsPanel({ challenge, onReload }) {
   }
 
   return (
-    <div style={panel}>
+    <div className={panel}>
       <h3 style={{ marginTop: 0 }}>Participants</h3>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
       {challenge.participants.map((p) => (
@@ -35,7 +35,8 @@ export default function ParticipantsPanel({ challenge, onReload }) {
           </span>
           {isOriginator && p.status === 'active' && p.id !== challenge.currentUserId && (
             <button
-              style={{ ...buttonSecondary, padding: '2px 8px', fontSize: '12px' }}
+              className={buttonSecondary}
+              style={{ padding: '2px 8px', fontSize: '12px' }}
               onClick={() => handleKick(p.id)}
               disabled={busy}
             >

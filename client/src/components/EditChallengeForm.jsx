@@ -30,28 +30,25 @@ export default function EditChallengeForm({ challenge, onSaved, onCancel }) {
   }
 
   return (
-    <form onSubmit={handleSave} style={panel}>
+    <form onSubmit={handleSave} className={panel}>
       <h3 style={{ marginTop: 0 }}>Edit Challenge</h3>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
 
-      <label style={label}>Title</label>
-      <input style={input} value={title} onChange={(e) => setTitle(e.target.value)} />
+      <label className={label}>Title</label>
+      <input className={input} value={title} onChange={(e) => setTitle(e.target.value)} />
 
-      <label style={label}>Description / rules</label>
+      <label className={label}>Description / rules</label>
       <textarea
-        style={{ ...input, minHeight: '80px' }}
+        className={input}
+        style={{ minHeight: '80px' }}
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
 
       {challenge.challenge_type === 'simple_progress' && (
         <>
-          <label style={label}>Confirmation timing</label>
-          <select
-            style={input}
-            value={confirmationTiming}
-            onChange={(e) => setConfirmationTiming(e.target.value)}
-          >
+          <label className={label}>Confirmation timing</label>
+          <select className={input} value={confirmationTiming} onChange={(e) => setConfirmationTiming(e.target.value)}>
             <option value="completion_only">Confirm only at completion</option>
             <option value="per_entry">Confirm every entry</option>
           </select>
@@ -59,10 +56,10 @@ export default function EditChallengeForm({ challenge, onSaved, onCancel }) {
       )}
 
       <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-        <button type="submit" style={button} disabled={busy}>
+        <button type="submit" className={button} disabled={busy}>
           Save
         </button>
-        <button type="button" style={buttonSecondary} onClick={onCancel} disabled={busy}>
+        <button type="button" className={buttonSecondary} onClick={onCancel} disabled={busy}>
           Cancel
         </button>
       </div>

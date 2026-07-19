@@ -40,13 +40,13 @@ export default function ManageChallengePanel({ challenge, onReload }) {
   }
 
   return (
-    <div style={panel}>
+    <div className={panel}>
       <h3 style={{ marginTop: 0 }}>Manage Challenge</h3>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {challenge.status === 'active' && (
           <button
-            style={buttonSecondary}
+            className={buttonSecondary}
             disabled={busy}
             onClick={() => runAction(() => api(`/api/challenges/${challenge.id}/pause`, { method: 'POST' }))}
           >
@@ -55,7 +55,7 @@ export default function ManageChallengePanel({ challenge, onReload }) {
         )}
         {challenge.status === 'paused' && (
           <button
-            style={buttonSecondary}
+            className={buttonSecondary}
             disabled={busy}
             onClick={() => runAction(() => api(`/api/challenges/${challenge.id}/resume`, { method: 'POST' }))}
           >
@@ -64,7 +64,7 @@ export default function ManageChallengePanel({ challenge, onReload }) {
         )}
         {(challenge.status === 'active' || challenge.status === 'paused') && (
           <button
-            style={buttonSecondary}
+            className={buttonSecondary}
             disabled={busy}
             onClick={() =>
               runAction(
@@ -77,7 +77,7 @@ export default function ManageChallengePanel({ challenge, onReload }) {
           </button>
         )}
         <button
-          style={buttonSecondary}
+          className={buttonSecondary}
           disabled={busy}
           onClick={() =>
             runAction(
@@ -89,11 +89,7 @@ export default function ManageChallengePanel({ challenge, onReload }) {
         >
           Restart
         </button>
-        <button
-          style={{ ...buttonSecondary, color: colors.danger, borderColor: colors.danger }}
-          disabled={busy}
-          onClick={handleDelete}
-        >
+        <button className={`${buttonSecondary} btn-danger`} disabled={busy} onClick={handleDelete}>
           Delete
         </button>
       </div>

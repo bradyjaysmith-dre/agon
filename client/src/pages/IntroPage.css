@@ -1,21 +1,10 @@
-/* Scoped to .intro-page — this is the one page in the app with real CSS
-   (hover states, keyframe animations, media queries) instead of inline
-   styles. Deliberate exception for the marketing/landing surface; every
-   authenticated page keeps the inline-style-only convention. */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* Scoped to .intro-page — the palette/fonts are global now (see
+   ../app.css's :root variables and font @import, loaded once for the
+   whole app), but this page keeps its own stylesheet for the things that
+   are still specific to it: the wreath-draw animation, hero reveal
+   sequence, and its own layout/media-query rules. */
 
 .intro-page {
-  --ink: #15120D;
-  --ink-2: #1B1710;
-  --bone: #EDE3CF;
-  --bone-dim: #C9BFA9;
-  --clay: #C1522F;
-  --clay-dim: #8A3A20;
-  --bronze: #C79A4B;
-  --olive: #6C7A4E;
-  --muted: #948A72;
-  --line: #3A3327;
-
   min-height: 100vh;
   background: var(--ink);
   color: var(--bone);

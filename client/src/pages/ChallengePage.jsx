@@ -7,7 +7,7 @@ import ParticipantsPanel from '../components/ParticipantsPanel.jsx';
 import SimpleProgressView from '../components/SimpleProgressView.jsx';
 import TournamentBracketView from '../components/TournamentBracketView.jsx';
 import { useApi } from '../lib/api.js';
-import { button, buttonSecondary, colors, page } from '../theme.js';
+import { button, buttonSecondary, colors, link, page } from '../theme.js';
 
 export default function ChallengePage() {
   const { challengeId } = useParams();
@@ -59,15 +59,15 @@ export default function ChallengePage() {
 
   if (!challenge) {
     return (
-      <div style={page}>
+      <div className={page}>
         {error ? <p style={{ color: colors.danger }}>{error}</p> : <p style={{ color: colors.muted }}>Loading…</p>}
       </div>
     );
   }
 
   return (
-    <div style={page}>
-      <Link to={`/circles/${challenge.circle_id}`} style={{ color: colors.muted, fontSize: '13px' }}>
+    <div className={page}>
+      <Link to={`/circles/${challenge.circle_id}`} className={link} style={{ fontSize: '13px' }}>
         ← Circle
       </Link>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
@@ -86,7 +86,7 @@ export default function ChallengePage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <h1 style={{ marginBottom: 0 }}>{challenge.title}</h1>
             {isOriginator && (
-              <button style={buttonSecondary} onClick={() => setEditing(true)}>
+              <button className={buttonSecondary} onClick={() => setEditing(true)}>
                 Edit
               </button>
             )}
@@ -104,7 +104,7 @@ export default function ChallengePage() {
       )}
 
       {!isParticipant && challenge.status === 'active' && !tournamentStarted && (
-        <button style={button} onClick={handleJoin} disabled={busy}>
+        <button className={button} onClick={handleJoin} disabled={busy}>
           Join Challenge
         </button>
       )}

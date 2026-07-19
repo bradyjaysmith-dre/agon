@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import Divider from '../components/Divider.jsx';
 import { useApi } from '../lib/api.js';
-import { button, buttonSecondary, colors, input, label, page, panel } from '../theme.js';
+import { button, buttonSecondary, colors, input, label, link, page, panel } from '../theme.js';
 
 export default function CirclePage() {
   const { circleId } = useParams();
@@ -66,15 +67,15 @@ export default function CirclePage() {
 
   if (!circle) {
     return (
-      <div style={page}>
+      <div className={page}>
         {error ? <p style={{ color: colors.danger }}>{error}</p> : <p style={{ color: colors.muted }}>Loading…</p>}
       </div>
     );
   }
 
   return (
-    <div style={page}>
-      <Link to="/" style={{ color: colors.muted, fontSize: '13px' }}>
+    <div className={page}>
+      <Link to="/" className={link} style={{ fontSize: '13px' }}>
         ← Your Circles
       </Link>
       <h1>{circle.name}</h1>
@@ -83,7 +84,7 @@ export default function CirclePage() {
       </p>
       {error && <p style={{ color: colors.danger }}>{error}</p>}
 
-      <div style={panel}>
+      <div className={panel}>
         <h3 style={{ marginTop: 0 }}>Members</h3>
         {circle.members.map((m) => (
           <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
@@ -92,7 +93,8 @@ export default function CirclePage() {
             </span>
             {circle.owner_id === circle.currentUserId && m.id !== circle.currentUserId && (
               <button
-                style={{ ...buttonSecondary, padding: '2px 8px', fontSize: '12px' }}
+                className={buttonSecondary}
+                style={{ padding: '2px 8px', fontSize: '12px' }}
                 onClick={() => handleKick(m.id)}
               >
                 Kick
@@ -102,13 +104,14 @@ export default function CirclePage() {
         ))}
       </div>
 
+      <Divider />
       <h2>Challenges</h2>
       {challenges?.length === 0 && <p style={{ color: colors.muted }}>No challenges yet.</p>}
       {challenges?.map((c) => (
-        <Link key={c.id} to={`/challenges/${c.id}`} style={{ textDecoration: 'none' }}>
+        <Link key={c.id} to={`/challenges/${c.id}`}>
           <div
+            className={panel}
             style={{
-              ...panel,
               cursor: 'pointer',
               display: 'flex',
               justifyContent: 'space-between',
@@ -133,18 +136,24 @@ export default function CirclePage() {
         </Link>
       ))}
 
-      <form onSubmit={handleCreateChallenge} style={panel}>
+      <form onSubmit={handleCreateChallenge} className={panel}>
         <h3 style={{ marginTop: 0 }}>Create a Challenge</h3>
-        <label style={label}>Title</label>
-        <input style={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="30-day plank streak" />
-        <label style={label}>Description / rules</label>
+        <label className={label}>Title</label>
+        <input
+          className={input}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="30-day plank streak"
+        />
+        <label className={label}>Description / rules</label>
         <textarea
-          style={{ ...input, minHeight: '80px' }}
+          className={input}
+          style={{ minHeight: '80px' }}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <label style={label}>Challenge type</label>
-        <select style={input} value={challengeType} onChange={(e) => setChallengeType(e.target.value)}>
+        <label className={label}>Challenge type</label>
+        <select className={input} value={challengeType} onChange={(e) => setChallengeType(e.target.value)}>
           <option value="simple_progress">Simple Progress Tracking</option>
           <option value="tournament_bracket">Tournament Bracket</option>
         </select>
@@ -156,19 +165,15 @@ export default function CirclePage() {
 
         {challengeType === 'simple_progress' && (
           <>
-            <label style={label}>Confirmation timing</label>
-            <select
-              style={input}
-              value={confirmationTiming}
-              onChange={(e) => setConfirmationTiming(e.target.value)}
-            >
+            <label className={label}>Confirmation timing</label>
+            <select className={input} value={confirmationTiming} onChange={(e) => setConfirmationTiming(e.target.value)}>
               <option value="completion_only">Confirm only at completion</option>
               <option value="per_entry">Confirm every entry</option>
             </select>
           </>
         )}
 
-        <button type="submit" style={{ ...button, marginTop: '12px' }} disabled={busy}>
+        <button type="submit" className={button} style={{ marginTop: '12px' }} disabled={busy}>
           Create Challenge
         </button>
       </form>
